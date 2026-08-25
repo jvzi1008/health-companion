@@ -1,0 +1,1466 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="icon" href="data:,">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2f6bff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="健康伴侣">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>健康伴侣 · 原型演示</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { font-size:18px; }
+  html.lg { font-size:22px; }
+  html.xl { font-size:26px; }
+  body {
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    background:#eef1f5; color:#222; max-width:480px; margin:0 auto;
+    height:100dvh; display:flex; flex-direction:column; position:relative; overflow:hidden;
+  }
+  header {
+    background:#2f6bff; color:#fff; padding:10px 12px; display:flex; align-items:center; gap:10px; flex-shrink:0;
+  }
+  .avatar {
+    width:44px; height:44px; border-radius:50%; background:#ffb300; color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:1.3rem; font-weight:bold; flex-shrink:0;
+  }
+  .hinfo { flex:1; }
+  .hname { font-size:1.1rem; font-weight:bold; }
+  .hstatus { font-size:0.8rem; opacity:.85; }
+  #menuBtn {
+    width:44px; height:44px; border:none; background:transparent; color:#fff; font-size:1.5rem; border-radius:10px;
+  }
+  #chat { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px; scrollbar-width:auto; scrollbar-color:#9fb2cc #eef1f6; }
+  #chat::-webkit-scrollbar { width:14px; }
+  #chat::-webkit-scrollbar-track { background:#eef1f6; border-radius:7px; }
+  #chat::-webkit-scrollbar-thumb { background:#9fb2cc; border-radius:7px; border:3px solid #eef1f6; }
+  #chat::-webkit-scrollbar-thumb:hover { background:#7a8ea8; }
+  .msg { display:flex; gap:8px; max-width:92%; animation:fade .25s ease; }
+  @keyframes fade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+  .msg .ava { width:38px; height:38px; border-radius:50%; background:#ffb300; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0; }
+  .msg.user { align-self:flex-end; flex-direction:row-reverse; }
+  .msg.user .ava { background:#7a8ea8; }
+  .bubble {
+    background:#fff; border-radius:14px; padding:10px 14px; font-size:1rem; line-height:1.6;
+    box-shadow:0 1px 2px rgba(0,0,0,.06); white-space:pre-wrap; word-break:break-word;
+  }
+  .msg.user .bubble { background:#2f6bff; color:#fff; }
+  .card {
+    margin-top:8px; border-radius:12px; padding:10px 12px; font-size:0.95rem; line-height:1.5;
+    border:1px solid #d9e1ee; background:#f7faff;
+  }
+  .card .ct { font-weight:bold; font-size:1rem; margin-bottom:4px; }
+  .card .btns { margin-top:8px; display:flex; flex-wrap:wrap; gap:8px; }
+  .cbtn {
+    border:none; border-radius:10px; padding:10px 16px; font-size:0.95rem; font-weight:bold;
+    cursor:pointer;
+  }
+  .cbtn.blue { background:#2f6bff; color:#fff; }
+  .cbtn.gray { background:#eef2f7; color:#333; }
+  .cbtn.red { background:#e6422e; color:#fff; }
+  .level { display:inline-flex; align-items:center; gap:6px; font-weight:bold; }
+  .dot { width:14px; height:14px; border-radius:50%; display:inline-block; flex-shrink:0; }
+  .dot.green { background:#1fa55a; }
+  .dot.yellow { background:#ff9f0a; }
+  .dot.red { background:#e6422e; }
+  .dots { margin-top:6px; }
+  footer { flex-shrink:0; background:#fff; border-top:1px solid #e3e7ee; padding:8px 10px 14px; }
+  #chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; touch-action:pan-y; user-select:none; -webkit-user-select:none; }
+  .chip {
+    flex-shrink:0; border:1px solid #c9d4e4; background:#f4f7fc; color:#2f6bff;
+    border-radius:18px; padding:8px 14px; font-size:0.9rem; cursor:pointer;
+  }
+  .typing { display:flex; gap:6px; padding:8px 2px; }
+  .typing span { width:10px; height:10px; border-radius:50%; background:#9fb2cc; animation:typing 1s infinite ease-in-out; }
+  .typing span:nth-child(2) { animation-delay:.15s; }
+  .typing span:nth-child(3) { animation-delay:.3s; }
+  @keyframes typing { 0%,80%,100% { transform:scale(.6); opacity:.5; } 40% { transform:scale(1); opacity:1; } }
+  .msgActions { display:flex; gap:8px; margin-top:8px; }
+  .actBtn {
+    border:1px solid #c9d4e4; background:#f7f9fd; color:#2f6bff;
+    border-radius:14px; padding:5px 12px; font-size:0.85rem; cursor:pointer;
+  }
+  .actBtn:active { background:#e6edf9; }
+  .shareImg { width:100%; border-radius:12px; }
+  .bar { display:flex; align-items:center; gap:10px; }
+  #textInput {
+    flex:1; border:1px solid #c9d4e4; border-radius:24px; padding:12px 16px; font-size:1rem; outline:none;
+    min-height:48px; max-height:132px; line-height:1.4; resize:none; overflow-y:auto; font-family:inherit; display:block;
+  }
+  #collapseBtn {
+    display:none; margin-top:6px; margin-left:auto; border:1px solid #c9d4e4; background:#f4f7fc; color:#2f6bff;
+    border-radius:14px; padding:5px 14px; font-size:0.8rem; cursor:pointer;
+  }
+  #sendBtn {
+    width:48px; height:48px; border:none; border-radius:50%; background:#2f6bff; color:#fff; font-size:1.2rem; flex-shrink:0;
+  }
+  .micWrap { position:relative; display:flex; align-items:center; justify-content:center; width:100%; padding:6px 0; }
+  .actions { display:flex; align-items:center; justify-content:center; gap:14px; padding:6px 0; }
+  .sideBtn {
+    width:66px; height:66px; border-radius:18px; border:1px solid #c9d4e4; background:#f4f7fc;
+    color:#2f6bff; font-size:0.85rem; font-weight:bold; cursor:pointer;
+  }
+  .imgMsg img { max-width:220px; max-height:260px; border-radius:12px; display:block; }
+  #micBtn {
+    width:92px; height:92px; border-radius:50%; border:none; background:#2f6bff; color:#fff;
+    font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 12px rgba(47,107,255,.35);
+  }
+  #micBtn.listening { background:#e6422e; animation:pulse 1s infinite; }
+  @keyframes pulse {
+    0%{ box-shadow:0 0 0 0 rgba(230,66,46,.5);}
+    70%{ box-shadow:0 0 0 22px rgba(230,66,46,0);}
+    100%{ box-shadow:0 0 0 0 rgba(230,66,46,0);}
+  }
+  #sosFloat {
+    position:absolute; right:12px; bottom:120px; z-index:5;
+    width:58px; height:58px; border-radius:50%; border:none; background:#e6422e; color:#fff;
+    font-size:0.85rem; font-weight:bold; box-shadow:0 4px 12px rgba(230,66,46,.4); cursor:pointer;
+  }
+  #backToLatest {
+    position:absolute; right:16px; bottom:196px; z-index:5; display:none;
+    min-width:56px; height:56px; border-radius:28px; border:none; background:#2f6bff; color:#fff;
+    font-size:0.95rem; font-weight:bold; padding:0 16px; box-shadow:0 4px 12px rgba(47,107,255,.4); cursor:pointer;
+  }
+  .overlay {
+    position:absolute; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:20; padding:20px;
+  }
+  .overlay.show { display:flex; }
+  .sheet { background:#fff; border-radius:16px; width:100%; max-width:440px; padding:18px; max-height:82dvh; overflow-y:auto; }
+  .sheet h2 { font-size:1.2rem; margin-bottom:12px; }
+  .list { list-style:none; }
+  .list li {
+    padding:12px 10px; border-radius:10px; font-size:1.05rem; display:flex; align-items:center; gap:10px; cursor:pointer;
+  }
+  .list li:active { background:#f0f4fa; }
+  .list .icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem; font-weight:bold; flex-shrink:0; }
+  .list .arrow { margin-left:auto; color:#aab3c1; }
+  .group { margin-bottom:14px; }
+  .group label { font-size:0.9rem; color:#6b7688; display:block; margin-bottom:6px; }
+  .seg { display:flex; gap:8px; }
+  .seg button {
+    flex:1; border:1px solid #c9d4e4; background:#fff; border-radius:10px; padding:10px; font-size:1rem; cursor:pointer;
+  }
+  .seg button.on { background:#2f6bff; color:#fff; border-color:#2f6bff; }
+  .switch { display:flex; align-items:center; justify-content:space-between; padding:10px 0; font-size:1.05rem; }
+  .switch input { width:52px; height:30px; }
+  .confirmBtn, .cancelBtn { width:100%; border:none; border-radius:12px; padding:16px; font-size:1.15rem; font-weight:bold; cursor:pointer; margin-top:8px; }
+  .confirmBtn { background:#e6422e; color:#fff; }
+  .cancelBtn { background:#eef2f7; color:#555; }
+  .alertbox { background:#fff5f5; border:1px solid #f3c7c2; color:#a33121; border-radius:12px; padding:12px; font-size:0.95rem; line-height:1.6; margin-top:10px; }
+  .footnote { font-size:0.8rem; color:#9aa3b2; text-align:center; padding:6px 0 2px; }
+  .formInput { width:100%; border:1px solid #c9d4e4; border-radius:10px; padding:12px; font-size:1.05rem; margin-top:2px; box-sizing:border-box; }
+  .saveBtn { width:100%; border:none; border-radius:12px; padding:14px; font-size:1.1rem; font-weight:bold; cursor:pointer; margin-top:14px; background:#2f6bff; color:#fff; }
+  .medRow { border:1px solid #c9d4e4; border-radius:12px; padding:10px; margin-bottom:10px; background:#fbfcfe; }
+  .medRow .formInput { margin-bottom:8px; }
+  .medTimesWrap { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .medTimesLabel { font-size:0.85rem; color:#6b7688; }
+  .medTime { border:1px solid #c9d4e4; border-radius:8px; padding:6px; font-size:1rem; }
+  .medAddTime, .medDel, .addMedBtn { border:none; border-radius:8px; padding:8px 12px; font-size:0.95rem; cursor:pointer; }
+  .medAddTime { background:#eef2f7; color:#2f6bff; font-weight:bold; }
+  .medDel { background:#ffece8; color:#e6422e; margin-top:8px; width:100%; }
+  .addMedBtn { width:100%; background:#eef2f7; color:#2f6bff; font-weight:bold; margin-top:2px; }
+  .sosChk { display:flex; align-items:center; gap:8px; font-size:1rem; color:#333; margin:6px 0 8px; }
+  .sosChk input { width:24px; height:24px; }
+  .testBtn { width:100%; border:none; border-radius:12px; padding:14px; font-size:1.1rem; font-weight:bold; cursor:pointer; margin-top:8px; background:#ff9f0a; color:#fff; }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="avatar" id="avatarAi">管</div>
+    <div class="hinfo">
+      <div class="hname" id="aiName">健康小管家</div>
+      <div class="hstatus">在线 · 一直陪着你</div>
+    </div>
+    <button id="menuBtn">☰</button>
+  </header>
+
+  <main id="chat"></main>
+
+  <footer>
+    <div id="chips"></div>
+    <div class="actions">
+      <button class="sideBtn" id="photoBtn">相机<br>相册</button>
+      <button id="micBtn">按住<br>说话</button>
+      <button class="sideBtn" id="typeBtn">打字</button>
+    </div>
+    <div class="bar" id="textBar" style="display:none;">
+      <textarea id="textInput" rows="1" placeholder="打字也可以，说一句话试试" maxlength="500"></textarea>
+      <button id="sendBtn">发</button>
+    </div>
+    <button id="collapseBtn">收起</button>
+    <div class="footnote">按住中间大按钮说话 · 左边可以拍照</div>
+  </footer>
+
+  <button id="sosFloat">紧急<br>SOS</button>
+  <button id="backToLatest">↓ 最新</button>
+
+  <div class="overlay" id="menuOverlay">
+    <div class="sheet">
+      <h2>我的健康</h2>
+      <ul class="list">
+        <li onclick="openPage('emergency')"><span class="icon" style="background:#e6422e;">急</span>急救手册<span class="arrow">›</span></li>
+        <li onclick="openPage('records')"><span class="icon" style="background:#1fa55a;">档</span>我的健康档案<span class="arrow">›</span></li>
+        <li onclick="openPage('family')"><span class="icon" style="background:#2f6bff;">亲</span>家属联系<span class="arrow">›</span></li>
+        <li onclick="openPage('callFamily')"><span class="icon" style="background:#1fa55a;">电</span>联系家人<span class="arrow">›</span></li>
+        <li onclick="openPage('data')"><span class="icon" style="background:#7a8ea8;">数</span>数据管理<span class="arrow">›</span></li>
+        <li onclick="openPage('settings')"><span class="icon" style="background:#ff9f0a;">设</span>设置<span class="arrow">›</span></li>
+      </ul>
+      <button class="cancelBtn" onclick="hideOverlay('menuOverlay')">返回</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="confirmOverlay">
+    <div class="sheet">
+      <h2 style="color:#e6422e;">确定呼叫 120 吗？</h2>
+      <p style="font-size:1rem; line-height:1.7;">拨出后会自动把你的<b>位置</b>、<b>常用药</b>、<b>过敏史</b>一起发给 120 和家人。</p>
+      <div id="sosOrderLine" style="font-size:1rem; color:#2f6bff; margin-top:8px;"></div>
+      <div class="alertbox">误按了？别慌，点下方灰色按钮取消。</div>
+      <button class="confirmBtn" onclick="call120()">呼叫 120</button>
+      <button class="cancelBtn" onclick="hideOverlay('confirmOverlay')">先取消</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="emergencyOverlay">
+    <div class="sheet">
+      <h2 style="color:#e6422e;">立即就医</h2>
+      <div class="level"><span class="dot red"></span>红色 · 情况紧急</div>
+      <div class="alertbox" style="margin-top:8px;">保持坐姿或平躺，不要乱动。<br>已经通知你的家人，并把位置发过去了。</div>
+      <div id="emInfo" style="font-size:0.9rem; color:#555; margin-top:10px; line-height:1.6;"></div>
+      <button class="confirmBtn" onclick="call120()">呼叫 120</button>
+      <button class="cancelBtn" onclick="endEmergency()">我误触了，取消</button>
+      <div class="footnote" style="margin-top:8px;">原型演示：模拟发送位置与短信通知</div>
+    </div>
+  </div>
+
+  <div class="overlay" id="pageOverlay">
+    <div class="sheet" id="pageSheet"></div>
+  </div>
+
+  <div class="overlay" id="shareOverlay">
+    <div class="sheet">
+      <h2>分享给家人</h2>
+      <div id="shareImgWrap" style="margin-bottom:10px;"></div>
+      <button class="saveBtn" onclick="downloadShareImg()">保存图片</button>
+      <button class="cancelBtn" onclick="hideOverlay('shareOverlay')">关闭</button>
+    </div>
+  </div>
+
+
+  <div class="overlay" id="photoOverlay">
+    <div class="sheet">
+      <h2>拍照或选照片</h2>
+      <ul class="list">
+        <li onclick="takePhoto('camera')"><span class="icon" style="background:#2f6bff;">拍</span>用相机拍照<span class="arrow">›</span></li>
+        <li onclick="takePhoto('album')"><span class="icon" style="background:#1fa55a;">选</span>从相册选择<span class="arrow">›</span></li>
+      </ul>
+      <div class="footnote">可以拍：药盒、体检报告、皮肤/伤口</div>
+      <button class="cancelBtn" onclick="hideOverlay('photoOverlay')">返回</button>
+    </div>
+  </div>
+  <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none">
+  <input type="file" id="albumInput" accept="image/*" style="display:none">
+
+<script>
+var S = {
+  callName: "叔叔",
+  aiName: "健康小管家",
+  voice: true,
+  speed: 0.85,
+  font: "",
+  provider: "doubao",
+  voiceId: "peach",
+  red: { 胸痛:1, "胸口疼":1, "胸口痛":1, 胸闷:1, "喘不上气":1, "呼吸急促":1, "呼吸困难":1, 昏迷:1, 晕倒:1, "失去意识":1, 抽搐:1, "大出血":1, 吐血:1, "面部歪斜":1, "嘴歪":1, "一侧手脚":1, "说话不清":1, 心梗:1, 中风:1, 卒中:1, 噎住:1, 掐住:1, 卡住:1, "农药":1, "想不开":1 },
+  yellow: { 疼:1, 痛:1, 发烧:1, 发热:1, 头晕:1, 恶心:1, 呕吐:1, 腹泻:1, 便秘:1, "血压高":1, "血糖高":1, "睡不着":1, 失眠:1, 乏力:1, "没劲":1 },
+  green: { "好多了":1, "好点了":1, 挺好:1, 不错:1, 没事:1, 吃了:1, "不疼了":1 }
+};
+
+var API = window.location.origin;
+var chatEl = document.getElementById("chat");
+var chipsEl = document.getElementById("chips");
+var log = [];
+var chatHistory = [];
+var audio = new Audio();
+
+var profile = {};
+try { profile = JSON.parse(localStorage.getItem("hc_profile") || "{}"); } catch (e) { profile = {}; }
+profile.name = profile.name || "王建国";
+profile.allergy = profile.allergy || "青霉素过敏";
+profile.medicine = profile.medicine || "降压药（早1粒晚1粒）";
+profile.bp = profile.bp || "128/82";
+profile.birth = profile.birth || "";
+profile.height = profile.height || "";
+profile.weight = profile.weight || "";
+profile.disease = profile.disease || "";
+profile.bloodSugar = profile.bloodSugar || "";
+profile.bloodType = profile.bloodType || "";
+profile.hospital = profile.hospital || "";
+profile.doctor = profile.doctor || "";
+profile.lifestyle = profile.lifestyle || "";
+if (!profile.records) profile.records = { bp: [], sugar: [] };
+profile.family = profile.family || {};
+if (!profile.contacts || !profile.contacts.length) {
+  profile.contacts = profile.family && profile.family.name
+    ? [{ relation: profile.family.relation || "儿子", name: profile.family.name, phone: profile.family.phone || "", sos: true }]
+    : [{ relation: "儿子", name: "小李", phone: "", sos: true }];
+}
+if (profile.callName) S.callName = profile.callName;
+
+function primaryContact() { return (profile.contacts || [])[0] || { relation: "儿子", name: "小李" }; }
+function sosContacts() { return (profile.contacts || []).filter(function (c) { return c.sos !== false && c.name; }); }
+function validPhone(p) { return /^1\d{10}$/.test(String(p || "").replace(/\s/g, "")); }
+function sosOrder() { return sosContacts().map(function (c) { return c.relation + " " + c.name; }).join(" → "); }
+
+function saveProfile() {
+  profile.callName = S.callName;
+  try { localStorage.setItem("hc_profile", JSON.stringify(profile)); } catch (e) {}
+}
+
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function sendMsg(text, who) {
+  log.push({ role: who, text: text });
+  renderMsg(who, text, null);
+}
+
+function lastUserText() {
+  for (var i = chatHistory.length - 1; i >= 0; i--) {
+    if (chatHistory[i].role === "user") return chatHistory[i].content || "";
+  }
+  return "";
+}
+
+function addMsgActions(b, text, q) {
+  var row = document.createElement("div");
+  row.className = "msgActions";
+  var play = document.createElement("button");
+  play.className = "actBtn";
+  play.textContent = "🔊 再听一遍";
+  play.onclick = function (e) { e.stopPropagation(); speak(text, true); };
+  var share = document.createElement("button");
+  share.className = "actBtn";
+  share.textContent = "📤 分享";
+  share.onclick = function (e) { e.stopPropagation(); openShareCard(q || "", text); };
+  row.appendChild(play);
+  row.appendChild(share);
+  b.appendChild(row);
+}
+
+function renderMsg(who, text, card) {
+  var m = document.createElement("div");
+  m.className = "msg " + who;
+  m.innerHTML = '<div class="ava">' + (who === "user" ? "我" : "管") + '</div><div class="bubble"></div>';
+  var b = m.querySelector(".bubble");
+  if (who === "user") {
+    b.textContent = text;
+  } else {
+    b.innerHTML = String(text).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\r?\n/g, "<br>");
+    addMsgActions(b, text, lastUserText());
+  }
+  if (card) {
+    var c = document.createElement("div");
+    c.className = "card";
+    c.innerHTML = card;
+    b.appendChild(c);
+  }
+  chatEl.appendChild(m);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function aiSay(text, card, withVoice) {
+  if (withVoice !== false) speak(text);
+  renderMsg("ai", text, card);
+}
+
+function b64toBlob(b64, type) {
+  var bin = atob(b64), len = bin.length, bytes = new Uint8Array(len);
+  for (var i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: type });
+}
+
+function createAILoading() {
+  var m = document.createElement("div");
+  m.className = "msg ai";
+  m.innerHTML = '<div class="ava">管</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+  chatEl.appendChild(m);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return m;
+}
+
+function aiSaySync(text, card, audioBase64, bubble) {
+  var m = bubble || createAILoading();
+  var b = m.querySelector(".bubble");
+
+  var textShown = false;
+  function revealText() {
+    if (textShown) return;
+    textShown = true;
+    b.innerHTML = String(text).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\r?\n/g, "<br>");
+    addMsgActions(b, text, lastUserText());
+    if (card) {
+      var c = document.createElement("div");
+      c.className = "card";
+      c.innerHTML = card;
+      b.appendChild(c);
+    }
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+  function playAudio(url) {
+    if (!url || !S.voice) return;
+    audio.src = url;
+    audio.play().catch(function () {});
+  }
+
+  if (!S.voice) { revealText(); return; }
+
+  if (audioBase64) {
+    try {
+      revealText();
+      playAudio(URL.createObjectURL(b64toBlob(audioBase64, "audio/mpeg")));
+      return;
+    } catch (e) { revealText(); return; }
+  }
+
+  var t = speechText(text);
+  if (!t) { revealText(); return; }
+  fetch(API + "/api/tts?text=" + encodeURIComponent(t) + "&voice=" + encodeURIComponent(S.voiceId))
+    .then(function (r) { if (!r.ok) throw 0; return r.blob(); })
+    .then(function (blob) { revealText(); playAudio(URL.createObjectURL(blob)); })
+    .catch(function () { revealText(); });
+  setTimeout(function () { revealText(); }, 3000);
+}
+
+function speak(text, force) {
+  if (!force && !S.voice) return;
+  var t = speechText(text);
+  if (!t) return;
+  if (S.voiceId === "browser") { browserSpeak(text); return; }
+  fetch(API + "/api/tts?text=" + encodeURIComponent(t) + "&voice=" + encodeURIComponent(S.voiceId))
+    .then(function (r) { if (!r.ok) throw 0; return r.blob(); })
+    .then(function (b) {
+      var url = URL.createObjectURL(b);
+      audio.src = url;
+      audio.play().catch(function () {});
+    })
+    .catch(function () { browserSpeak(text); });
+}
+
+function speechText(text) {
+  return String(text)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\*\*/g, "")
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{FE0F}\u{20E3}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function browserSpeak(text) {
+  try {
+    var u = new SpeechSynthesisUtterance(speechText(text));
+    u.lang = "zh-CN";
+    u.rate = S.speed;
+    var vs = speechSynthesis.getVoices();
+    for (var i = 0; i < vs.length; i++) {
+      if (vs[i].lang && vs[i].lang.indexOf("zh") === 0) { u.voice = vs[i]; break; }
+    }
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+function setChips(list) {
+  chipsEl.innerHTML = "";
+  list.slice(0, 3).forEach(function (t) {
+    var b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = t;
+    b.setAttribute("data-t", t);
+    chipsEl.appendChild(b);
+  });
+}
+
+var chipsDown = false, chipsStartX = 0, chipsStartScroll = 0, chipsMoved = false;
+chipsEl.addEventListener("pointerdown", function (e) {
+  chipsDown = true; chipsMoved = false;
+  chipsStartX = e.clientX; chipsStartScroll = chipsEl.scrollLeft;
+});
+window.addEventListener("pointermove", function (e) {
+  if (!chipsDown) return;
+  var dx = e.clientX - chipsStartX;
+  if (Math.abs(dx) > 6) chipsMoved = true;
+  chipsEl.scrollLeft = chipsStartScroll - dx;
+});
+window.addEventListener("pointerup", function () { chipsDown = false; });
+chipsEl.addEventListener("click", function (e) {
+  if (chipsMoved) { e.preventDefault(); e.stopPropagation(); chipsMoved = false; return; }
+  var t = e.target && e.target.closest ? e.target.closest(".chip") : null;
+  if (t) userSay(t.getAttribute("data-t") || t.textContent);
+});
+
+function greeting() {
+  var h = new Date().getHours();
+  var g = h < 6 ? "早上好" : h < 11 ? "早上好" : h < 14 ? "中午好" : h < 18 ? "下午好" : "晚上好";
+  aiSay(g + "，" + S.callName + "！我是您的健康小管家" + S.aiName + "。\n我能帮您做几件事：陪您聊聊天、到点提醒您吃药、帮您看药盒和化验单、身体不舒服时帮您判断该不该去医院。\n您想先从哪件开始？",
+    '<div class="level"><span class="dot green"></span>认识期 · 第一天</div>',
+    false);
+  setChips(["我挺好的", "今天有点不舒服", "我胸口有点闷", "我该吃什么药"]);
+}
+
+function userSay(text) {
+  if (!text) return;
+  sendMsg(text, "user");
+  if (text.length <= 15 && maybeRecord(text)) return;
+  maybeRecord(text, true);
+  respond(text);
+}
+
+function respond(text) {
+  var level = triage(text);
+  if (level === "red") { redFlow(text); return; }
+  if (S.provider === "demo") { fallbackRules(text); return; }
+  aiRequest(text, null);
+}
+
+function fallbackRules(text) {
+  if (triage(text) === "yellow") { yellowFlow(text); return; }
+  greenFlow(text);
+}
+
+function aiRequest(text, image) {
+  var loading = createAILoading();
+  var body = { provider: S.provider, messages: chatHistory.concat([{ role: "user", content: text }]), voice: S.voiceId, profile: profile };
+  if (image) body.image = image;
+  fetch(API + "/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  })
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (j) {
+      if (!j.reply) throw 0;
+      chatHistory.push({ role: "user", content: text + (image ? "（附图片）" : "") });
+      chatHistory.push({ role: "assistant", content: j.reply });
+      if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
+      aiSaySync(j.reply, null, j.audioBase64, loading);
+      var sugs = (j.suggestions && j.suggestions.length) ? j.suggestions : ["好的，谢谢", "我胸口有点闷", "给我讲点健康知识"];
+      setChips(sugs);
+      saveChatLocal();
+      syncHistory();
+      maybeUpdateMemory();
+    })
+    .catch(function () {
+      chatHistory.push({ role: "user", content: text });
+      if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
+      saveChatLocal();
+      syncHistory();
+      loading.parentNode.removeChild(loading);
+      if (image) { askImageKind(); } else { fallbackRules(text); }
+    });
+}
+
+function stripSug(text) {
+  var i = String(text).indexOf("【建议】");
+  return i < 0 ? text : text.slice(0, i);
+}
+
+function renderHistory() {
+  chatEl.innerHTML = "";
+  chatHistory.slice(-60).forEach(function (m) {
+    if (m.role === "user") {
+      sendMsg(m.content, "user");
+    } else {
+      renderMsg("ai", stripSug(m.content), null);
+    }
+  });
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function saveChatLocal() {
+  try { localStorage.setItem("hc_chat", JSON.stringify(chatHistory.slice(-100))); } catch (e) {}
+}
+
+function loadChatLocal() {
+  try {
+    var c = JSON.parse(localStorage.getItem("hc_chat") || "[]");
+    if (Array.isArray(c) && c.length) { chatHistory = c.slice(-100); renderHistory(); }
+  } catch (e) {}
+}
+
+var histTimer = null;
+function syncHistory() {
+  clearTimeout(histTimer);
+  histTimer = setTimeout(function () {
+    fetch(API + "/api/history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: chatHistory.slice(-100) }),
+    }).catch(function () {});
+  }, 800);
+}
+
+var lastMemoryCount = 0;
+function maybeUpdateMemory() {
+  if (chatHistory.length >= 8 && chatHistory.length - lastMemoryCount >= 8) {
+    lastMemoryCount = chatHistory.length;
+    fetch(API + "/api/memory", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversation: chatHistory.slice(-16) }),
+    }).catch(function () {});
+  }
+}
+
+function restoreHistory(done) {
+  fetch(API + "/api/history")
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      if (j.messages && j.messages.length) {
+        chatHistory = j.messages.slice(-100);
+        lastMemoryCount = chatHistory.length;
+        renderHistory();
+      } else {
+        loadChatLocal();
+        lastMemoryCount = chatHistory.length;
+      }
+      done && done();
+    })
+    .catch(function () { loadChatLocal(); lastMemoryCount = chatHistory.length; done && done(); });
+}
+
+function buildExportText() {
+  var L = [];
+  var d = new Date();
+  L.push("健康小管家 · 数据导出");
+  L.push("导出时间：" + d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2));
+  L.push("");
+  L.push("【健康档案】");
+  L.push("姓名：" + profile.name + (/^\d{4}$/.test(profile.birth) ? "（约" + (new Date().getFullYear() - parseInt(profile.birth, 10)) + "岁）" : ""));
+  if (profile.height || profile.weight) L.push("身高体重：" + profile.height + "cm / " + profile.weight + "kg");
+  if (profile.disease) L.push("既往病史：" + profile.disease);
+  if (profile.allergy) L.push("过敏史：" + profile.allergy);
+  if (profile.medicine) L.push("常用药：" + profile.medicine);
+  if (profile.bp) L.push("最近血压：" + profile.bp);
+  if (profile.bloodSugar) L.push("最近血糖：" + profile.bloodSugar);
+  if (profile.bloodType) L.push("血型：" + profile.bloodType);
+  if (profile.hospital) L.push("常去医院：" + profile.hospital);
+  if (profile.doctor) L.push("主治医生：" + profile.doctor);
+  if (profile.lifestyle) L.push("生活习惯：" + profile.lifestyle);
+  var meds = profile.meds || [];
+  if (meds.length) {
+    L.push("服药提醒：");
+    meds.forEach(function (m) { L.push("  " + m.name + "（每天 " + (m.times || []).join("、") + " 吃" + (m.note ? "，" + m.note : "") + "）"); });
+  }
+  var recs = profile.records || {};
+  if ((recs.bp || []).length || (recs.sugar || []).length) {
+    L.push("测量记录：");
+    (recs.bp || []).forEach(function (r) { L.push("  " + r.date + " 血压 " + r.sys + "/" + r.dia); });
+    (recs.sugar || []).forEach(function (r) { L.push("  " + r.date + " 血糖 " + r.val); });
+  }
+  L.push("");
+  L.push("【家属】");
+  (profile.contacts || []).forEach(function (c) { L.push((c.relation || "") + " " + (c.name || "") + (c.phone ? " " + c.phone : "") + (c.sos === false ? "" : "（紧急通知）")); });
+  L.push("");
+  L.push("【聊天记录】");
+  chatHistory.slice(-100).forEach(function (m) {
+    var t = stripSug(m.content || "").replace(/<[^>]+>/g, "").replace(/\*\*/g, "");
+    L.push((m.role === "user" ? "我：" : "小管家：") + t);
+  });
+  return L.join("\n");
+}
+
+function downloadExport() {
+  var txt = buildExportText();
+  var blob = new Blob(["\ufeff" + txt], { type: "text/plain;charset=utf-8" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "健康数据导出_" + (new Date().getMonth() + 1) + "_" + new Date().getDate() + ".txt";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { document.body.removeChild(a); }, 100);
+}
+
+var shareCanvas = null;
+
+function wrapText(ctx, text, maxWidth) {
+  var lines = [];
+  var cur = "";
+  for (var i = 0; i < text.length; i++) {
+    var ch = text[i];
+    if (ch === "\n") { lines.push(cur); cur = ""; continue; }
+    if (ctx.measureText(cur + ch).width > maxWidth) { lines.push(cur); cur = ch; }
+    else cur += ch;
+  }
+  if (cur !== "" || text.endsWith("\n")) lines.push(cur);
+  return lines;
+}
+
+function openShareCard(q, a) {
+  var W = 720, pad = 48, CARD_H = 660;
+  var canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = pad * 2 + CARD_H;
+  var ctx = canvas.getContext("2d");
+
+  var qtext = String(q).replace(/\*\*/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  var atext = String(a).replace(/\*\*/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  if (qtext.length > 120) qtext = qtext.slice(0, 120) + "…";
+  if (atext.length > 200) atext = atext.slice(0, 200) + "…";
+
+  ctx.fillStyle = "#eef2f7";
+  ctx.fillRect(0, 0, W, canvas.height);
+
+  var x = pad, y = pad, w = W - pad * 2;
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(x, y, w, CARD_H, 28) : ctx.rect(x, y, w, CARD_H);
+  ctx.fill();
+
+  var cx = x + 36;
+  ctx.fillStyle = "#2f6bff";
+  ctx.font = "bold 34px 'Microsoft YaHei',sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("健康小管家", cx, y + 48);
+
+  ctx.fillStyle = "#9aa3b2";
+  ctx.font = "22px 'Microsoft YaHei',sans-serif";
+  var d = new Date();
+  var dateStr = d.getFullYear() + "年" + (d.getMonth() + 1) + "月" + d.getDate() + "日";
+  ctx.textAlign = "right";
+  ctx.fillText(dateStr, x + w - 36, y + 48);
+  ctx.textAlign = "left";
+
+  ctx.strokeStyle = "#e3e7ee";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x + 36, y + 78);
+  ctx.lineTo(x + w - 36, y + 78);
+  ctx.stroke();
+
+  var ty = y + 128;
+  var contentW = w - 72;
+
+  if (qtext) {
+    ctx.fillStyle = "#6b7688";
+    ctx.font = "bold 26px 'Microsoft YaHei',sans-serif";
+    ctx.fillText("问", cx, ty);
+    ctx.font = "25px 'Microsoft YaHei',sans-serif";
+    ctx.fillStyle = "#3a4453";
+    var qlines = wrapText(ctx, qtext, contentW);
+    ty += 30;
+    qlines.forEach(function (ln) {
+      ctx.fillText(ln, cx + 44, ty);
+      ty += 36;
+    });
+    ty += 16;
+  }
+
+  ctx.strokeStyle = "#e3e7ee";
+  ctx.beginPath();
+  ctx.moveTo(x + 36, ty - 6);
+  ctx.lineTo(x + w - 36, ty - 6);
+  ctx.stroke();
+  ty += 20;
+
+  ctx.fillStyle = "#2f6bff";
+  ctx.font = "bold 26px 'Microsoft YaHei',sans-serif";
+  ctx.fillText("答", cx, ty);
+  ctx.font = "26px 'Microsoft YaHei',sans-serif";
+  ctx.fillStyle = "#22262e";
+  var alines = wrapText(ctx, atext, contentW);
+  ty += 32;
+  alines.forEach(function (ln) {
+    ctx.fillText(ln, cx + 44, ty);
+    ty += 38;
+  });
+
+  ctx.fillStyle = "#9aa3b2";
+  ctx.font = "20px 'Microsoft YaHei',sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("—— 健康小管家 为您整理 ——", W / 2, y + CARD_H - 24);
+  ctx.textAlign = "left";
+
+  shareCanvas = canvas;
+  var wrap = document.getElementById("shareImgWrap");
+  wrap.innerHTML = "";
+  var img = document.createElement("img");
+  img.className = "shareImg";
+  img.alt = "分享图片";
+  img.src = canvas.toDataURL("image/png");
+  wrap.appendChild(img);
+  showOverlay("shareOverlay");
+}
+
+function downloadShareImg() {
+  if (!shareCanvas) return;
+  var a = document.createElement("a");
+  a.href = shareCanvas.toDataURL("image/png");
+  a.download = "健康问答_" + (new Date().getMonth() + 1) + "_" + new Date().getDate() + ".png";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { document.body.removeChild(a); }, 100);
+}
+
+function downloadBackup() {
+  var data = { version: 1, time: new Date().toISOString(), profile: profile, chat: chatHistory.slice(-100) };
+  var blob = new Blob(["\ufeff" + JSON.stringify(data, null, 1)], { type: "application/json;charset=utf-8" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "健康小管家备份_" + (new Date().getMonth() + 1) + "_" + new Date().getDate() + ".json";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { document.body.removeChild(a); }, 100);
+  aiSay("备份文件已生成，请保存好。换手机或重装后，用它就能把档案和聊天记录都找回来。");
+  hideOverlay("pageOverlay");
+}
+
+function importBackup(input) {
+  var file = input.files && input.files[0];
+  input.value = "";
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function () {
+    try {
+      var data = JSON.parse(reader.result);
+      if (!data || typeof data !== "object" || !data.profile) throw 0;
+      profile = data.profile;
+      if (data.chat && Array.isArray(data.chat)) chatHistory = data.chat.slice(-100);
+      if (profile.callName) S.callName = profile.callName;
+      saveProfile();
+      saveChatLocal();
+      renderHistory();
+      aiSay("备份导入成功，" + S.callName + "！您的档案、聊天记录都回来了。");
+    } catch (e) {
+      aiSay("这个文件好像不是健康小管家的备份，请确认一下再试。");
+    }
+    hideOverlay("pageOverlay");
+  };
+  reader.onerror = function () { aiSay("读取文件失败了，请重试。"); hideOverlay("pageOverlay"); };
+  reader.readAsText(file);
+}
+
+function triage(text) {
+  for (var k in S.red) if (text.indexOf(k) > -1) return "red";
+  for (var k2 in S.yellow) if (text.indexOf(k2) > -1) return "yellow";
+  return "green";
+}
+
+function greenFlow(text) {
+  if (/好|不错|挺好|没事|吃了/.test(text)) {
+    aiSay("那就好，听到您身体舒坦，我心里也踏实。" + S.callName + "真棒！\n对了，今天降温了，记得多穿件外套，晚上睡觉盖厚点。",
+      '<div class="level"><span class="dot green"></span>安全 · 居家观察</div><div class="dots">没事多喝水，早晚各量一次血压。</div>');
+    setChips(["好，我知道了", "我胸口有点闷", "今天吃什么药", "给我讲点健康知识"]);
+  } else if (/聊|说话|讲/.test(text)) {
+    scienceClass();
+} else if (/吃什么药|药/.test(text)) {
+    var meds = profile.meds || [];
+    if (meds.length) {
+      var lines = meds.map(function (m) {
+        var s = "<b>" + m.name + "</b>（每天 " + (m.times || []).join("、") + " 吃";
+        if (m.note) s += "，" + m.note;
+        return s + "）";
+      }).join("<br>");
+      aiSay("好的，帮您查了一下今天的药：<br>" + lines + "<br>到点我会提醒您的。吃完跟我说一声，我帮您记着。",
+        '<div class="level"><span class="dot green"></span>用药提醒</div><div class="btns"><button class="cbtn blue" onclick="praise()">我吃完啦</button><button class="cbtn gray" onclick="aiSay(\'没事，慢慢来，别忘了就行。\')">待会儿吃</button></div>');
+    } else {
+      aiSay("您还没在健康档案里设置药物。点右上角菜单 → 健康档案 → 服药提醒，把药和每天提醒的时间告诉我，我就帮您记着、到点提醒您。",
+        '<div class="level"><span class="dot green"></span>用药提醒</div>');
+    }
+  } else {
+    aiSay("听您这么一说，我心里有数了。咱们一步步来：<br>先坐下歇 5 分钟，喝口温水，再测一下血压，把数字告诉我，我帮您看看。",
+      '<div class="level"><span class="dot green"></span>安全 · 居家观察</div><div class="dots">如果出现不舒服加重，随时告诉我，或者直接按红色 SOS。</div>');
+    setChips(["测好了，120/80", "还是不舒服", "我胸口有点闷"]);
+  }
+}
+
+function yellowFlow(text) {
+  var where = /胃|肚子|头疼|头痛|牙|嗓子|腰|腿|膝盖/.test(text) ? "去挂<b>内科</b>或<b>消化内科</b>最合适" : "建议去社区医院或<b>内科</b>看看，挂不到科就到导诊台说哪儿不舒服";
+  aiSay("别急，" + S.callName + "，听我说。<br>听您的描述，多半不是急症，但也不能大意。<br>建议：今天先别累着，注意休息；<b>" + where + "</b>。<br>您要是愿意，我把今天的对话整理成一页纸，去医院直接给医生看。",
+    '<div class="level"><span class="dot yellow"></span>黄色 · 建议就医</div><div class="dots">留意有没有加重。如果出现<b>胸痛、喘不上气、晕倒</b>，立即按红色 SOS。</div><div class="btns"><button class="cbtn blue" onclick="praise()">好的，我知道了</button><button class="cbtn gray" onclick="emSim()">我想现在就看看</button></div>');
+  setChips(["我想整理一页纸给医生", "我胸口有点闷", "今天就到这吧"]);
+}
+
+function redFlow(text) {
+  aiSay(S.callName + "！别动，听我的。<br><b>这种情况必须马上去医院，现在就去。</b>",
+    '<div class="level"><span class="dot red"></span>红色 · 立即就医</div><div class="dots">保持不动，我来呼叫帮助。</div>',
+    true);
+setTimeout(function () {
+    var sc = sosContacts()[0] || primaryContact();
+    aiSay("我已经用您的位置通知了<b>" + sc.relation + " " + sc.name + "</b>，" + (sc.relation || "家人") + "也正在往您这儿赶。<br>现在帮您拨 120，接通后我会把您的病情、位置、常用药一起念给急救人员听。",
+      '<div class="btns"><button class="cbtn red" onclick="confirmEmerg()">拨 120</button></div>');
+  }, 1200);
+}
+
+function praise() {
+  aiSay("真棒，" + S.callName + "！我给您记下了。您这样认真对待自己的身体，比什么都强。<br>明天这个点，我还会提醒您。",
+    '<div class="level"><span class="dot green"></span>已完成 · 记录在案</div>');
+  setChips(["好，谢谢小管家", "我胸口有点闷", "给我讲点健康知识"]);
+}
+
+function scienceClass() {
+  aiSay("好嘞，给您讲个 30 秒小课堂：<br><b>为什么天一冷，血压容易高？</b><br>天冷血管会变细，就像水管变窄，水压就上去了。所以降温天更要按时吃药、勤量血压。",
+    '<div class="btns"><button class="cbtn blue" onclick="understand(true)">听懂了</button><button class="cbtn gray" onclick="understand(false)">没懂，再讲一遍</button></div>');
+}
+
+function understand(ok) {
+  if (ok) {
+    aiSay("您能听懂，我就特别高兴！<br>那就今晚睡前量一次血压，明天把数字告诉我，我帮您看看。");
+  } else {
+    aiSay("没关系，我再讲一遍：<br>天冷，血管收缩变细，血还是那么多，压力就变大，血压就高了。<br>就像冬天水管里的水，管细了水压就大。");
+  }
+}
+
+function confirmEmerg() {
+  var line = document.getElementById("sosOrderLine");
+  if (line) {
+    var order = sosOrder();
+    line.textContent = "将依次通知：" + (order ? order + " → " : "") + "120";
+  }
+  showOverlay("confirmOverlay");
+}
+
+function call120() {
+  hideOverlay("confirmOverlay");
+  showOverlay("emergencyOverlay");
+var loc = "示例小区 3 号楼 2 单元 501（原型演示位置）";
+  var age = /^\d{4}$/.test(profile.birth) ? "（约" + (new Date().getFullYear() - parseInt(profile.birth, 10)) + "岁）" : "";
+  var lines = ["已发送给家人：位置 " + loc];
+  lines.push("姓名：" + profile.name + age);
+  if (profile.bloodType) lines.push("血型：" + profile.bloodType);
+  if (profile.disease) lines.push("病史：" + profile.disease);
+  lines.push("常用药：" + (profile.medicine || "无"));
+  lines.push("过敏史：" + (profile.allergy || "无记录"));
+  if (profile.hospital) lines.push("常去医院：" + profile.hospital);
+  var order = sosOrder();
+  lines.push("通知顺序：" + (order ? order + " → " : "") + "120");
+  document.getElementById("emInfo").textContent = lines.join("\n");
+  try { speak("已通知您的家人，位置已发送，请不要乱动。"); } catch (e) {}
+}
+
+function endEmergency() {
+  hideOverlay("emergencyOverlay");
+  aiSay("好的，收到，不是真的就好。您没事比什么都强。");
+}
+
+function emSim() {
+  showOverlay("emergencyOverlay");
+  document.getElementById("emInfo").textContent = "（原型演示）您可点下方呼叫 120，或点取消回到对话。";
+}
+
+function openPage(name) {
+  hideOverlay("menuOverlay");
+  var content = "";
+  if (name === "emergency") {
+    content = '<h2>急救手册</h2><ul class="list">' +
+      '<li onclick="pageBack()"><span class="icon" style="background:#e6422e;">心</span>胸痛怎么办<span class="arrow">›</span></li>' +
+      '<li onclick="pageBack()"><span class="icon" style="background:#e6422e;">晕</span>头晕/晕倒<span class="arrow">›</span></li>' +
+      '<li onclick="pageBack()"><span class="icon" style="background:#e6422e;">噎</span>吃东西噎住<span class="arrow">›</span></li>' +
+      '<li onclick="pageBack()"><span class="icon" style="background:#e6422e;">烫</span>烫伤处理<span class="arrow">›</span></li>' +
+      '<li onclick="pageBack()"><span class="icon" style="background:#e6422e;">摔</span>摔倒扶起<span class="arrow">›</span></li>' +
+      '<li onclick="pageBack()"><span class="icon" style="background:#e6422e;">糖</span>低血糖<span class="arrow">›</span></li>' +
+      '</ul><button class="cancelBtn" onclick="hideOverlay(\'pageOverlay\')">返回</button>';
+  } else if (name === "records") {
+    content = '<h2>健康档案</h2>' +
+      '<div class="group"><label>姓名</label><input class="formInput" id="pfName" value="' + esc(profile.name) + '"></div>' +
+      '<div class="group"><label>出生年份（如1958）</label><input class="formInput" id="pfBirth" value="' + esc(profile.birth) + '" inputmode="numeric"></div>' +
+      '<div class="group"><label>身高（厘米） / 体重（公斤）</label>' +
+      '<div style="display:flex; gap:8px;"><input class="formInput" id="pfHeight" value="' + esc(profile.height) + '" placeholder="身高" inputmode="numeric" style="flex:1;"><input class="formInput" id="pfWeight" value="' + esc(profile.weight) + '" placeholder="体重" inputmode="numeric" style="flex:1;"></div>' +
+      '<div class="footnote" id="bmiNote" style="text-align:left;"></div></div>' +
+      '<div class="group"><label>既往病史（如：高血压、糖尿病）</label><input class="formInput" id="pfDisease" value="' + esc(profile.disease) + '"></div>' +
+      '<div class="group"><label>过敏史</label><input class="formInput" id="pfAllergy" value="' + esc(profile.allergy) + '"></div>' +
+      '<div class="group"><label>常用药</label><input class="formInput" id="pfMedicine" value="' + esc(profile.medicine) + '"></div>' +
+      '<div class="group"><label>最近血压</label><input class="formInput" id="pfBp" value="' + esc(profile.bp) + '"></div>' +
+      '<div class="group"><label>最近血糖（如 6.2）</label><input class="formInput" id="pfSugar" value="' + esc(profile.bloodSugar) + '"></div>' +
+      '<div class="group"><label>血型</label><input class="formInput" id="pfBlood" value="' + esc(profile.bloodType) + '"></div>' +
+      '<div class="group"><label>常去医院</label><input class="formInput" id="pfHospital" value="' + esc(profile.hospital) + '"></div>' +
+      '<div class="group"><label>主治/家庭医生</label><input class="formInput" id="pfDoctor" value="' + esc(profile.doctor) + '"></div>' +
+      '<div class="group"><label>生活习惯（吸烟/喝酒）</label><input class="formInput" id="pfLifestyle" value="' + esc(profile.lifestyle) + '"></div>' +
+      '<div class="group"><label>服药提醒（每天到点提醒您）</label><div id="medEditor">' +
+      (profile.meds || []).map(medRowHTML).join("") +
+      '</div><button type="button" class="addMedBtn" onclick="addMedRow()">＋ 添加一个药</button></div>' +
+      '<div class="group"><label>测量记录（最近）</label><div class="dots" id="recList">' + recordsListHTML() + '</div>' +
+      '<button type="button" class="medDel" onclick="clearRecords()" style="margin-top:8px;">清空记录</button></div>' +
+      '<button class="saveBtn" onclick="saveRecords()">保存</button>' +
+      '<button class="cancelBtn" onclick="hideOverlay(\'pageOverlay\')">返回</button>';
+    setTimeout(function () { updateBMI(); }, 0);
+  } else if (name === "family") {
+    content = '<h2>家属联系</h2>' +
+      '<div class="footnote" style="text-align:left;">可以存多个家人，紧急时按从上到下顺序通知。勾选"紧急时通知我"的才会收到 SOS。</div>' +
+      '<div id="contactEditor">' + (profile.contacts || []).map(contactRowHTML).join("") + '</div>' +
+      '<button type="button" class="addMedBtn" onclick="addContact()">＋ 添加家属</button>' +
+      '<button class="testBtn" onclick="testNotify()">测试通知</button>' +
+      '<button class="saveBtn" onclick="saveFamily()">保存</button>' +
+      '<button class="cancelBtn" onclick="hideOverlay(\'pageOverlay\')">返回</button>';
+  } else if (name === "callFamily") {
+    var cs = (profile.contacts || []).filter(function (c) { return c.name && c.phone; });
+    if (!cs.length) {
+      content = '<h2>联系家人</h2>' +
+        '<div class="dots">还没存家人的手机号。先去「家属联系」里填一下，存好后点这里就能一键打电话。</div>' +
+        '<button class="cancelBtn" onclick="hideOverlay(\'pageOverlay\')">返回</button>';
+    } else {
+      content = '<h2>联系家人</h2><ul class="list">' +
+        cs.map(function (c) {
+          return '<li onclick="callContact(this)" data-phone="' + esc(c.phone) + '"><span class="icon" style="background:#2f6bff;">电</span>' + esc(c.relation ? c.relation + " · " : "") + esc(c.name) + '<span class="arrow" style="color:#2f6bff;">点此拨打 ›</span></li>';
+        }).join("") +
+        '</ul><button class="cancelBtn" onclick="hideOverlay(\'pageOverlay\')">返回</button>';
+    }
+  } else if (name === "data") {
+    content = '<h2>数据管理</h2>' +
+      '<div class="dots">导出的内容包括：健康档案、服药提醒、测量记录、家属联系和最近聊天记录。备份文件可在其他设备导入恢复。</div>' +
+      '<button class="saveBtn" onclick="downloadBackup()">导出备份（可导入）</button>' +
+      '<button class="saveBtn" style="background:#1fa55a;" onclick="document.getElementById(\'importFile\').click()">导入备份</button>' +
+      '<input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importBackup(this)">' +
+      '<button class="saveBtn" style="background:#e6422e;" onclick="downloadExport()">导出给医生看（文本）</button>' +
+      '<button class="cancelBtn" onclick="hideOverlay(\'pageOverlay\')">返回</button>';
+  } else if (name === "settings") {
+    content = '<h2>设置</h2>' +
+      '<div class="group"><label>AI 引擎</label><div class="seg" id="segAi">' +
+      '<button class="segbtn" data-p="doubao">豆包</button><button class="segbtn" data-p="deepseek">DeepSeek</button><button class="segbtn" data-p="demo">演示</button></div>' +
+      '<div class="footnote" style="text-align:left;">豆包/DeepSeek 需先配置 server/.env 并启动代理服务</div></div>' +
+      '<div class="group"><label>AI 声音</label><div class="seg" id="segVoice">' +
+      '<button class="segbtn" data-vc="peach">清新女声(千问)</button><button class="segbtn" data-vc="cancan">温柔女声(千问)</button><button class="segbtn" data-vc="edge">晓晓(Edge)</button><button class="segbtn" data-vc="browser">浏览器</button></div>' +
+      '<div class="footnote" style="text-align:left;">清新/温柔女声走千问 TTS；没配 key 时自动用晓晓</div></div>' +
+      '<div class="group"><label>怎么称呼您</label><div class="seg">' +
+      '<button class="segbtn" data-v="叔叔">叔叔</button><button class="segbtn" data-v="阿姨">阿姨</button><button class="segbtn" data-v="老爷子">老爷子</button><button class="segbtn" data-v="__custom__">自定义</button></div></div>' +
+      '<div class="group"><label>字号</label><div class="seg">' +
+      '<button class="segbtn" data-f="">标准</button><button class="segbtn" data-f="lg">大</button><button class="segbtn" data-f="xl">特大</button></div></div>' +
+      '<div class="group"><label>语音播报</label><div class="switch"><span>朗读回答</span><input type="checkbox" id="voiceChk" checked></div></div>' +
+      '<button class="cancelBtn" onclick="hideOverlay(\'pageOverlay\')">返回</button>';
+  }
+  document.getElementById("pageSheet").innerHTML = content;
+  showOverlay("pageOverlay");
+  if (name === "settings") {
+    var segs = document.querySelectorAll(".segbtn");
+segs.forEach(function (b) {
+      var key = b.dataset.p ? "p" : b.dataset.vc ? "vc" : b.dataset.v ? "v" : b.dataset.f ? "f" : "";
+      var cur = key === "p" ? S.provider : key === "vc" ? S.voiceId : key === "v" ? S.callName : key === "f" ? S.font : null;
+      if (cur !== null && b.dataset[key] !== "__custom__" && cur === b.dataset[key]) b.classList.add("on");
+      b.onclick = function () {
+        segs.forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+        if (b.dataset.v) {
+          if (b.dataset.v === "__custom__") {
+            var seg = b.parentElement;
+            seg.innerHTML = '<input class="formInput" id="customCallInput" placeholder="请输入想让我叫您的称呼">' +
+              '<button class="segbtn" onclick="confirmCustomCall()" style="margin-top:8px;">确定</button>';
+            document.getElementById("customCallInput").focus();
+          } else {
+            S.callName = b.dataset.v;
+            saveProfile();
+            aiSay("好嘞，以后我就叫您" + S.callName + "。");
+          }
+        }
+        if (b.dataset.f) {
+          document.documentElement.className = b.dataset.f;
+          S.font = b.dataset.f;
+        }
+        if (b.dataset.p) {
+          S.provider = b.dataset.p;
+          chatHistory = [];
+          aiSay("好的，现在用" + (S.provider === "doubao" ? "豆包" : S.provider === "deepseek" ? "DeepSeek" : "演示回复") + "来回答您。");
+        }
+        if (b.dataset.vc) {
+          S.voiceId = b.dataset.vc;
+          speak("您听到的就是我现在的" + S.callName + "声音。");
+        }
+      };
+    });
+    document.getElementById("voiceChk").onchange = function () {
+      S.voice = this.checked;
+      if (S.voice) speak("语音已开启。");
+    };
+  }
+}
+
+function pageBack() {
+  aiSay("急救手册里的步骤都有大字版和语音版，正式版里点开就能听。");
+}
+
+function confirmCustomCall() {
+  var v = (document.getElementById("customCallInput") || {}).value;
+  v = (v || "").trim();
+  if (!v) return;
+  S.callName = v;
+  saveProfile();
+  aiSay("好嘞，以后我就叫您" + v + "。");
+  hideOverlay("pageOverlay");
+}
+
+function fval(id) { return (document.getElementById(id).value || "").trim(); }
+
+function saveRecords() {
+  profile.name = fval("pfName") || profile.name;
+  profile.birth = fval("pfBirth");
+  profile.height = fval("pfHeight");
+  profile.weight = fval("pfWeight");
+  profile.disease = fval("pfDisease");
+  profile.allergy = fval("pfAllergy");
+  profile.medicine = fval("pfMedicine");
+  profile.bp = fval("pfBp");
+  profile.bloodSugar = fval("pfSugar");
+  profile.bloodType = fval("pfBlood");
+  profile.hospital = fval("pfHospital");
+  profile.doctor = fval("pfDoctor");
+  profile.lifestyle = fval("pfLifestyle");
+  profile.meds = collectMeds();
+  if (profile.meds.length) {
+    profile.medicine = profile.meds.map(function (m) { return m.name; }).join("、");
+  }
+  saveProfile();
+  aiSay("好的，" + S.callName + "，健康档案都更新好了。以后我回答问题，也会参考您的档案来给您建议。");
+  hideOverlay("pageOverlay");
+}
+
+function updateBMI() {
+  var h = parseFloat(fval("pfHeight")), w = parseFloat(fval("pfWeight"));
+  var el = document.getElementById("bmiNote");
+  if (!el) return;
+  if (!h || !w || h <= 0) { el.textContent = profile.height && profile.weight ? "" : "填上身高体重，我帮您算 BMI。"; return; }
+  var bmi = w / ((h / 100) * (h / 100));
+  var label = bmi < 18.5 ? "偏瘦" : bmi < 24 ? "正常" : bmi < 28 ? "偏胖" : "肥胖";
+  el.textContent = "BMI " + bmi.toFixed(1) + "（" + label + "）";
+}
+
+function recordsListHTML() {
+  var recs = profile.records || { bp: [], sugar: [] };
+  var lines = [];
+  (recs.bp || []).slice(-5).forEach(function (r) { lines.push(r.date + "　血压 " + r.sys + "/" + r.dia); });
+  (recs.sugar || []).slice(-5).forEach(function (r) { lines.push(r.date + "　血糖 " + r.val); });
+  return lines.length ? lines.join("<br>") : "还没记录。量完血压/血糖告诉我数字（如：测好了，120/80），我就帮您记下。";
+}
+
+function clearRecords() {
+  profile.records = { bp: [], sugar: [] };
+  saveProfile();
+  aiSay("好的，测量记录已经清空了。");
+  hideOverlay("pageOverlay");
+}
+
+function addRecord(kind, data) {
+  if (!profile.records) profile.records = { bp: [], sugar: [] };
+  var d = new Date();
+  data.date = (d.getMonth() + 1) + "/" + d.getDate() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+  profile.records[kind].push(data);
+  if (profile.records[kind].length > 30) profile.records[kind] = profile.records[kind].slice(-30);
+  saveProfile();
+}
+
+function maybeRecord(text, silent) {
+  var mBP = text.match(/(\d{2,3})\s*[\/／]\s*(\d{2,3})/);
+  if (mBP) {
+    addRecord("bp", { sys: +mBP[1], dia: +mBP[2] });
+    if (!silent) aiSay("好嘞，记下了：今天血压 <b>" + mBP[1] + "/" + mBP[2] + "</b>。<br>以后每次量完都告诉我，我给您攒成一张表看变化。");
+    return true;
+  }
+  var mBG = text.match(/血糖\s*[:：]?\s*(\d+(?:\.\d+)?)/);
+  if (mBG) {
+    addRecord("sugar", { val: +mBG[1] });
+    if (!silent) aiSay("好嘞，记下了：今天血糖 <b>" + mBG[1] + "</b>。<br>以后每次量完都告诉我，我给您攒成一张表看变化。");
+    return true;
+  }
+  return false;
+}
+
+function medRowHTML(m) {
+  m = m || {};
+  var times = (m.times && m.times.length) ? m.times : [""];
+  var t = '<div class="medRow">' +
+    '<input class="formInput medName" value="' + esc(m.name || "") + '" placeholder="药名，如：降压药">' +
+    '<input class="formInput medNote" value="' + esc(m.note || "") + '" placeholder="注意事项，如：饭后吃，一天1粒">' +
+    '<div class="medTimesWrap"><span class="medTimesLabel">每日提醒时间</span>' +
+    times.map(function (x) { return '<input type="time" class="medTime" value="' + esc(x || "") + '">'; }).join("") +
+    '<button type="button" class="medAddTime" onclick="addMedTime(this)">＋</button></div>' +
+    '<button type="button" class="medDel" onclick="delMed(this)">删除这个药</button>' +
+    '</div>';
+  return t;
+}
+
+function addMedRow() {
+  document.getElementById("medEditor").insertAdjacentHTML("beforeend", medRowHTML({}));
+}
+
+function addMedTime(btn) {
+  var wrap = btn.parentElement;
+  var input = document.createElement("input");
+  input.type = "time";
+  input.className = "medTime";
+  wrap.insertBefore(input, btn);
+}
+
+function delMed(btn) {
+  var row = btn.closest(".medRow");
+  row.parentElement.removeChild(row);
+}
+
+function collectMeds() {
+  var meds = [];
+  document.querySelectorAll(".medRow").forEach(function (row) {
+    var name = (row.querySelector(".medName").value || "").trim();
+    if (!name) return;
+    var note = (row.querySelector(".medNote").value || "").trim();
+    var times = [];
+    row.querySelectorAll(".medTime").forEach(function (t) {
+      var v = (t.value || "").trim();
+      if (v) times.push(v);
+    });
+    if (!times.length) times = ["08:00"];
+    meds.push({ name: name, note: note, times: times });
+  });
+  return meds;
+}
+
+function contactRowHTML(c) {
+  c = c || {};
+  return '<div class="medRow">' +
+    '<input class="formInput cRelation" value="' + esc(c.relation || "") + '" placeholder="关系，如：儿子">' +
+    '<input class="formInput cName" value="' + esc(c.name || "") + '" placeholder="称呼/姓名">' +
+    '<input class="formInput cPhone" value="' + esc(c.phone || "") + '" placeholder="11位手机号" inputmode="tel">' +
+    '<label class="sosChk"><input type="checkbox" class="cSos"' + (c.sos === false ? "" : " checked") + '> 紧急时通知我</label>' +
+    '<button type="button" class="medDel" onclick="delContact(this)">删除</button>' +
+    '</div>';
+}
+
+function addContact() {
+  document.getElementById("contactEditor").insertAdjacentHTML("beforeend", contactRowHTML({}));
+}
+
+function delContact(btn) {
+  var row = btn.closest(".medRow");
+  row.parentNode.removeChild(row);
+}
+
+function collectContacts() {
+  var cs = [];
+  document.querySelectorAll("#contactEditor .medRow").forEach(function (row) {
+    var relation = (row.querySelector(".cRelation").value || "").trim();
+    var name = (row.querySelector(".cName").value || "").trim();
+    if (!name && !relation) return;
+    cs.push({ relation: relation, name: name, phone: (row.querySelector(".cPhone").value || "").trim(), sos: row.querySelector(".cSos").checked });
+  });
+  return cs;
+}
+
+function saveFamily() {
+  var cs = collectContacts();
+  var bad = cs.filter(function (c) { return c.phone && !validPhone(c.phone); });
+  if (bad.length) {
+    aiSay("有几个手机号好像不对（" + bad.map(function (c) { return c.name || c.relation; }).join("、") + "），手机号要 11 位，麻烦再核对一下？");
+    return;
+  }
+  profile.contacts = cs;
+  saveProfile();
+  var order = sosOrder();
+  aiSay("好的，家属都记好了。紧急时会依次通知：" + (order || "暂无，记得填家人的手机号") + (order ? " → 120" : "") + "。");
+  hideOverlay("pageOverlay");
+}
+
+function testNotify() {
+  var cs = collectContacts();
+  var good = cs.filter(function (c) { return c.sos !== false && validPhone(c.phone); });
+  if (!good.length) {
+    aiSay("还没有填好带手机号的家人，先填一下再测试。");
+    return;
+  }
+  var order = good.map(function (c) { return c.relation + " " + c.name; }).join(" → ");
+  aiSay("（原型演示）测试短信已发出，通知顺序：" + order + "。<br>正式版会真的发送位置短信和微信通知，现在先验证流程通不通。");
+}
+
+function callContact(li) {
+  var phone = li.getAttribute("data-phone");
+  if (!phone) return;
+  if (confirm("给 " + li.textContent.replace("点此拨打 ›", "").trim() + " 拨打电话？")) {
+    location.href = "tel:" + phone.replace(/\s/g, "");
+  }
+}
+
+function showOverlay(id) { document.getElementById(id).classList.add("show"); }
+function hideOverlay(id) { document.getElementById(id).classList.remove("show"); }
+
+document.getElementById("menuBtn").onclick = function () { showOverlay("menuOverlay"); };
+
+document.getElementById("photoBtn").onclick = function () { showOverlay("photoOverlay"); };
+document.getElementById("typeBtn").onclick = function () {
+  document.getElementById("textBar").style.display = "flex";
+  document.getElementById("textInput").focus();
+};
+
+function takePhoto(mode) {
+  hideOverlay("photoOverlay");
+  var inp = mode === "camera" ? document.getElementById("camInput") : document.getElementById("albumInput");
+  inp.value = "";
+  inp.click();
+}
+
+function bindPhotoInput(id) {
+  document.getElementById(id).addEventListener("change", function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () { handleImage(r.result); };
+    r.readAsDataURL(f);
+  });
+}
+
+function handleImage(src) {
+  var m = document.createElement("div");
+  m.className = "msg user";
+  m.innerHTML = '<div class="ava">我</div><div class="bubble"><div class="imgMsg"><img src="' + src + '"></div></div>';
+  chatEl.appendChild(m);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  if (S.provider === "demo") {
+    askImageKind();
+  } else {
+    aiRequest("帮我看一下这张照片：判断它是药盒、体检报告、皮肤问题还是其他，然后给我对应的帮助和提醒。", src);
+  }
+}
+
+function askImageKind() {
+  aiSay(S.callName + "，照片收到了。这张照片是关于什么的？我好帮您看。",
+    '<div class="btns"><button class="cbtn blue" onclick="imgKind(\'med\')">药盒</button><button class="cbtn blue" onclick="imgKind(\'report\')">体检报告</button><button class="cbtn blue" onclick="imgKind(\'skin\')">皮肤/伤口</button><button class="cbtn gray" onclick="imgKind(\'other\')">其他</button></div>');
+}
+
+function imgKind(kind) {
+  if (kind === "med") {
+    aiSay("我认出来了，这是<b>苯磺酸氨氯地平</b>，治高血压的降压药。<br>我帮您记进用药提醒：每天早饭后 1 粒。是不是这样吃的？",
+      '<div class="btns"><button class="cbtn blue" onclick="praise()">对，就是这样</button><button class="cbtn gray" onclick="aiSay(\'那您把吃法和剂量告诉我，我帮您记下来。\')">不对</button></div>');
+  } else if (kind === "report") {
+    aiSay("我帮您把体检报告上的关键指标念出来了：<br>血压 <b>138/88</b>，稍微偏高一点；血脂、血糖都正常。<br>建议最近按点吃药，一周后再测一次血压告诉我。",
+      '<div class="level"><span class="dot yellow"></span>黄色 · 建议关注</div><div class="dots">正式版会把全部指标标出来，并生成一页纸给医生看。</div>');
+    setChips(["好，我知道了", "我胸口有点闷", "给我讲点健康知识"]);
+  } else if (kind === "skin") {
+    aiSay("从照片看，像是普通的<b>皮疹/湿疹</b>，多半不要紧。先观察，别抓。<br>如果痒得厉害或者变大，就去皮肤科看看。",
+      '<div class="level"><span class="dot green"></span>绿色 · 居家观察</div><div class="dots">原型演示：正式版由 AI 直接识图，仅作参考，不能代替医生。</div>');
+    setChips(["好，我知道了", "我胸口有点闷", "给我讲点健康知识"]);
+  } else {
+    aiSay("收到，我记下了。您要是想问什么，直接说就行。");
+    setChips(["好，我知道了", "我胸口有点闷", "给我讲点健康知识"]);
+  }
+}
+
+bindPhotoInput("camInput");
+bindPhotoInput("albumInput");
+
+document.getElementById("sosFloat").onclick = function () {
+  aiSay(S.callName + "，您按了紧急按钮。是误触，还是真不舒服？",
+    '<div class="btns"><button class="cbtn red" onclick="confirmEmerg()">真不舒服</button><button class="cbtn gray" onclick="aiSay(\'没事就好，吓我一跳。\')">误触了</button></div>');
+};
+
+var backToLatest = document.getElementById("backToLatest");
+backToLatest.onclick = function () {
+  chatEl.scrollTop = chatEl.scrollHeight;
+  backToLatest.style.display = "none";
+};
+chatEl.addEventListener("scroll", function () {
+  var nearBottom = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 120;
+  backToLatest.style.display = nearBottom ? "none" : "inline-block";
+});
+
+var micBtn = document.getElementById("micBtn");
+var rec = null;
+try {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    rec = new SR();
+    rec.lang = "zh-CN";
+    rec.interimResults = false;
+    rec.continuous = false;
+    rec.onresult = function (e) {
+      micBtn.classList.remove("listening");
+      micBtn.textContent = "按住\n说话";
+      var t = "";
+      for (var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+      userSay(t);
+    };
+    rec.onerror = function () {
+      micBtn.classList.remove("listening");
+      micBtn.textContent = "按住\n说话";
+      document.getElementById("textBar").style.display = "flex";
+      aiSay("这边听不清，您也可以点下面框里打字，说个大概就行。");
+    };
+  }
+} catch (e) { rec = null; }
+
+micBtn.addEventListener("pointerdown", function () {
+  if (rec) {
+    try {
+      micBtn.classList.add("listening");
+      micBtn.textContent = "正在听...";
+      rec.start();
+    } catch (e) { useTextFallback(); }
+  } else {
+    useTextFallback();
+  }
+});
+micBtn.addEventListener("pointerup", function () {
+  if (rec) { try { rec.stop(); } catch (e) {} }
+});
+micBtn.addEventListener("pointerleave", function () {
+  if (rec) { try { rec.stop(); } catch (e) {} }
+});
+
+function useTextFallback() {
+  document.getElementById("textBar").style.display = "flex";
+  document.getElementById("textInput").focus();
+}
+
+document.getElementById("sendBtn").onclick = function () {
+  var v = document.getElementById("textInput").value.trim();
+  if (!v) return;
+  document.getElementById("textInput").value = "";
+  resetInputHeight();
+  userSay(v);
+};
+document.getElementById("textInput").addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("sendBtn").click(); }
+});
+
+function autoGrowInput() {
+  var el = document.getElementById("textInput");
+  el.style.height = "auto";
+  var h = el.scrollHeight;
+  if (h > 132) h = 132;
+  el.style.height = h + "px";
+  document.getElementById("collapseBtn").style.display = (el.scrollHeight > 60) ? "block" : "none";
+}
+function resetInputHeight() {
+  var el = document.getElementById("textInput");
+  el.style.height = "48px";
+  document.getElementById("collapseBtn").style.display = "none";
+}
+document.getElementById("textInput").addEventListener("input", autoGrowInput);
+document.getElementById("collapseBtn").onclick = resetInputHeight;
+
+if (speechSynthesis) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = function () { speechSynthesis.getVoices(); };
+}
+
+restoreHistory(greeting);
+
+var firedToday = {};
+function medReminderTick() {
+  var now = new Date();
+  var hm = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2);
+  var dayKey = now.getMonth() + "/" + now.getDate();
+  (profile.meds || []).forEach(function (m) {
+    (m.times || []).forEach(function (t) {
+      if (t !== hm) return;
+      var k = dayKey + "|" + m.name + "|" + t;
+      if (firedToday[k]) return;
+      firedToday[k] = true;
+      var note = m.note ? "，" + m.note : "";
+      aiSay("到时间啦，" + S.callName + "，该吃<b>" + m.name + "</b>了" + note + "。<br>吃完跟我说一声，我帮您记着。",
+        '<div class="btns"><button class="cbtn blue" onclick="praise()">我吃完啦</button><button class="cbtn gray" onclick="aiSay(\'没事，慢慢来，别忘了就行。\')">待会儿吃</button></div>');
+    });
+  });
+}
+setInterval(medReminderTick, 30000);
+</script>
+</body>
+</html>
+
